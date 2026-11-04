@@ -74,7 +74,7 @@ No PC needed to use it, no account, no cloud: everything runs on the Flipper and
   </tr>
 </table>
 
-<sub>Illustrations: the app's real screens drawn inside a stylised Flipper Zero.</sub>
+<sub>Real app screens on a Flipper Zero, cartoon style.</sub>
 
 # 🚀 Install
 
