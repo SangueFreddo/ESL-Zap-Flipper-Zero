@@ -52,7 +52,7 @@ No PC needed to use it, no account, no cloud: everything runs on the Flipper and
 | 📡 **Send images & text** | Any BMP (1/4/8/24/32-bit, any size) is scaled, dithered and sent. Also a text mode and a test card. |
 | 🎨 **Red / yellow aware** | Detects the accent colour of tricolour tags and sends the colour plane automatically. |
 | 🏷️ **Easy tag add** | Type only digits 3–16 of the barcode (the rest isn't needed), or **import from NFC** for tags that have a chip — the Flipper reads it live. |
-| 🔌 **Works on every firmware** | One build each for **Official, Momentum, Unleashed, RogueMaster**, rebuilt weekly by CI. |
+| 🔌 **Works on every firmware** | One build each for **Official, Momentum and Unleashed**, rebuilt weekly by CI. RogueMaster shares Unleashed's API, so it uses the Unleashed build. |
 | 🖱️ **One-click install** | A web page detects your firmware over USB and installs the right build; it also converts any photo for you. |
 | 👀 **Preview first** | See exactly what the label will show, on the Flipper screen, before sending anything. |
 | 🌍 **Bilingual** | Full interface in **Italiano** and **English**. |
@@ -140,7 +140,7 @@ Collega il Flipper via USB e premi Installa, oppure trascina una foto e inviala 
 | 📡 **Invia immagini e testo** | Qualsiasi BMP (1/4/8/24/32 bit, ogni dimensione) viene scalato, dithering applicato e inviato. C'è anche la modalità testo e l'immagine di prova. |
 | 🎨 **Riconosce rosso/giallo** | Rileva il colore d'accento dei tag tricolori e invia da solo il piano colore. |
 | 🏷️ **Aggiunta facile** | Scrivi solo le cifre **3–16** del codice a barre (il resto non serve), oppure **importa da NFC** per i tag col chip: il Flipper lo legge in diretta. |
-| 🔌 **Tutti i firmware** | Una build per **Official, Momentum, Unleashed, RogueMaster**, ricompilata ogni settimana dalla CI. |
+| 🔌 **Tutti i firmware** | Una build per **Official, Momentum e Unleashed**, ricompilata ogni settimana dalla CI. RogueMaster ha la stessa API di Unleashed, quindi usa la build Unleashed. |
 | 🖱️ **Installazione 1 clic** | La pagina web riconosce il firmware via USB e installa la build giusta; converte anche le tue foto. |
 | 👀 **Anteprima** | Vedi sullo schermo del Flipper cosa mostrerà l'etichetta prima di inviare. |
 

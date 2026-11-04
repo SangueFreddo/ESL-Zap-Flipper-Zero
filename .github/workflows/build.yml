@@ -33,7 +33,6 @@ jobs:
           - { id: momentum-dev, label: "Momentum (dev)", fork: Momentum, channel: dev, index: "https://up.momentum-fw.dev/firmware/directory.json", optional: false }
           - { id: unleashed-release, label: "Unleashed (release)", fork: Unleashed, channel: release, index: "https://up.unleashedflip.com/directory.json", optional: false }
           - { id: unleashed-dev, label: "Unleashed (dev)", fork: Unleashed, channel: dev, index: "https://up.unleashedflip.com/directory.json", optional: true }
-          - { id: roguemaster-release, label: "RogueMaster", fork: RogueMaster, channel: release, index: "https://up.roguemaster.net/firmware/directory.json", optional: true }
     steps:
       - uses: actions/checkout@v4
 
