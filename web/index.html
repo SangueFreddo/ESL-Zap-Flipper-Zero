@@ -1,0 +1,780 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ESL Zap - Installer e Modifica foto</title>
+<meta name="description" content="Install ESL Zap on any Flipper Zero firmware in one click and turn your photos into e-paper label images.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Crect x='4.5' y='1.5' width='5' height='7' fill='%23d9dad4' stroke='black'/%3E%3Crect x='6' y='3' width='2' height='2' fill='%23c8102e'/%3E%3Cpath d='M1 3l1 2-1 2' stroke='black' fill='none'/%3E%3C/svg%3E">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,400..900&display=swap" rel="stylesheet">
+<style>
+:root {
+  --paper: #d9dad4;
+  --paper-hi: #e6e7e2;
+  --ink: #000000;
+  --ink-soft: #3d3f42;
+  --line: #a9aba4;
+  --red: #c8102e;
+  --yellow: #e2b100;
+  --ok: #1f6b3a;
+  --focus: #1d4ed8;
+  --radius-label: 10px;
+  --radius-ctl: 4px;
+  --measure: 68ch;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --paper: #1d1e1c;
+    --paper-hi: #262725;
+    --ink: #ecede8;
+    --ink-soft: #b4b6b0;
+    --line: #4b4d48;
+    --red: #ff5a6e;
+    --ok: #6fd391;
+    --focus: #8ab4ff;
+  }
+}
+:root[data-theme="dark"] {
+  --paper: #1d1e1c;
+  --paper-hi: #262725;
+  --ink: #ecede8;
+  --ink-soft: #b4b6b0;
+  --line: #4b4d48;
+  --red: #ff5a6e;
+  --ok: #6fd391;
+  --focus: #8ab4ff;
+}
+* { box-sizing: border-box; }
+html { -webkit-text-size-adjust: 100%; }
+body {
+  margin: 0;
+  background: var(--paper);
+  color: var(--ink);
+  font-family: "Archivo", system-ui, sans-serif;
+  font-variation-settings: "wdth" 100;
+  font-size: 17px;
+  line-height: 1.5;
+}
+a { color: inherit; text-underline-offset: 3px; }
+:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.wrap { max-width: 1160px; margin: 0 auto; padding: 0 16px; }
+
+/* top bar */
+.bar { display: flex; align-items: center; justify-content: space-between; padding: 18px 0; }
+.brand { display: flex; align-items: center; gap: 10px; font-weight: 800; font-size: 20px;
+  font-variation-settings: "wdth" 75; letter-spacing: .01em; text-decoration: none; }
+.brand svg { width: 28px; height: 28px; }
+.lang { display: flex; border: 1.5px solid var(--ink); border-radius: var(--radius-ctl); overflow: hidden; }
+.lang button { background: none; border: 0; padding: 5px 11px; font: inherit; font-size: 14px; color: var(--ink); cursor: pointer; }
+.lang button[aria-pressed="true"] { background: var(--ink); color: var(--paper); }
+
+/* hero */
+.hero { display: grid; grid-template-columns: minmax(0, 1.25fr) minmax(0, 1fr); gap: 48px; padding: 24px 0 56px; align-items: start; }
+h1 { font-size: clamp(44px, 7.4vw, 96px); line-height: .9; margin: 0 0 18px; font-weight: 900;
+  font-variation-settings: "wdth" 62; letter-spacing: -.01em; }
+.lede { font-size: 19px; max-width: 46ch; color: var(--ink-soft); margin: 0 0 28px; }
+
+/* the label */
+.label {
+  position: relative; background: var(--paper-hi); border: 2px solid var(--ink);
+  border-radius: var(--radius-label); padding: 14px 14px 10px;
+  box-shadow: 0 2px 0 var(--ink);
+}
+.label-glass { position: relative; background: #f2f2ee; border: 1.5px solid var(--ink);
+  display: grid; place-items: center; aspect-ratio: 296 / 128; overflow: hidden; cursor: pointer; }
+.label-glass canvas { width: 100%; height: 100%; image-rendering: pixelated; display: block; }
+.label-glass.drag { outline: 3px dashed var(--red); outline-offset: -8px; }
+.drop-hint { position: absolute; inset: 0; display: grid; place-items: center; text-align: center; color: #000;
+  font-weight: 700; font-variation-settings: "wdth" 80; font-size: clamp(18px, 2.6vw, 26px); pointer-events: none; padding: 12px; }
+.drop-hint small { display: block; font-weight: 400; font-size: 14px; color: #3d3f42; font-variation-settings: "wdth" 100; }
+.label-foot { display: flex; justify-content: space-between; gap: 10px; align-items: baseline; padding-top: 8px; font-size: 13px; color: var(--ink-soft); }
+.barcode { font-variant-numeric: tabular-nums; letter-spacing: .08em; }
+
+/* studio controls */
+.controls { display: grid; grid-template-columns: repeat(auto-fill, minmax(160px, 1fr)); gap: 14px 18px; margin-top: 18px; }
+.ctl { display: flex; flex-direction: column; gap: 4px; font-size: 14px; }
+.ctl > span { color: var(--ink-soft); }
+select, input[type=text] {
+  font: inherit; font-size: 15px; color: var(--ink); background: var(--paper-hi);
+  border: 1.5px solid var(--ink); border-radius: var(--radius-ctl); padding: 7px 9px; width: 100%;
+}
+input[type=range] { width: 100%; accent-color: var(--ink); }
+.check { flex-direction: row; align-items: center; gap: 8px; padding-top: 22px; }
+.check input { width: 18px; height: 18px; accent-color: var(--ink); }
+.studio-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 18px; }
+
+/* buttons */
+.btn { font: inherit; font-weight: 700; font-size: 16px; border-radius: var(--radius-ctl); padding: 11px 18px;
+  border: 2px solid var(--ink); background: transparent; color: var(--ink); cursor: pointer; }
+.btn.primary { background: var(--ink); color: var(--paper); }
+.btn.big { font-size: 20px; padding: 16px 26px; font-variation-settings: "wdth" 85; }
+.btn:disabled { opacity: .45; cursor: not-allowed; }
+.btn:not(:disabled):active { transform: translateY(1px); }
+
+/* install panel */
+.install { border-left: 2px solid var(--ink); padding-left: 28px; }
+.steps { list-style: none; margin: 26px 0 0; padding: 0; counter-reset: s; }
+.steps li { counter-increment: s; display: grid; grid-template-columns: 34px 1fr; gap: 12px; padding: 12px 0; border-top: 1.5px solid var(--line); }
+.steps li::before { content: counter(s); width: 28px; height: 28px; border-radius: 50%; border: 2px solid var(--ink);
+  display: grid; place-items: center; font-weight: 800; font-size: 14px; }
+.steps li.done::before { content: "\2713"; background: var(--ink); color: var(--paper); }
+.steps li.active::before { background: var(--red); border-color: var(--red); color: #fff; }
+.steps b { display: block; font-variation-settings: "wdth" 85; }
+.steps p { margin: 2px 0 0; font-size: 14px; color: var(--ink-soft); }
+.meter { height: 10px; border: 1.5px solid var(--ink); border-radius: 2px; margin-top: 8px; overflow: hidden; display: none; }
+.meter i { display: block; height: 100%; width: 0; background: var(--ink); transition: width .15s linear; }
+.status { min-height: 1.5em; margin-top: 14px; font-size: 15px; }
+.status.err { color: var(--red); font-weight: 600; }
+.status.ok { color: var(--ok); font-weight: 600; }
+.device { margin-top: 10px; font-size: 14px; display: none; padding: 10px 12px; border: 1.5px dashed var(--ink); border-radius: var(--radius-ctl); }
+.opt { display: flex; align-items: center; gap: 8px; margin-top: 14px; font-size: 14px; }
+.opt input { width: 18px; height: 18px; accent-color: var(--ink); }
+.nosupport { display: none; margin-top: 16px; padding: 12px; border: 2px solid var(--red); border-radius: var(--radius-ctl); font-size: 15px; }
+
+/* sections */
+section.band { padding: 56px 0; border-top: 2px solid var(--ink); }
+h2 { font-size: clamp(30px, 4.4vw, 48px); line-height: 1; margin: 0 0 18px; font-weight: 900; font-variation-settings: "wdth" 70; }
+.prose { max-width: var(--measure); }
+.prose p { margin: 0 0 14px; }
+table { border-collapse: collapse; width: 100%; max-width: 760px; font-size: 15px; }
+th, td { text-align: left; padding: 10px 8px; border-bottom: 1.5px solid var(--line); }
+th { font-weight: 700; font-variation-settings: "wdth" 85; }
+td a { font-weight: 600; }
+.table-scroll { overflow-x: auto; }
+.how { display: grid; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); gap: 26px; counter-reset: h; margin-top: 10px; }
+.how div { counter-increment: h; }
+.how div::before { content: counter(h); display: block; font-weight: 900; font-size: 44px; line-height: 1; font-variation-settings: "wdth" 62; margin-bottom: 6px; }
+.how b { display: block; font-variation-settings: "wdth" 85; font-size: 18px; margin-bottom: 4px; }
+.how p { margin: 0; color: var(--ink-soft); font-size: 15px; }
+.warn { border-left: 6px solid var(--red); padding: 4px 0 4px 16px; max-width: var(--measure); }
+footer { border-top: 2px solid var(--ink); padding: 26px 0 40px; font-size: 14px; color: var(--ink-soft); }
+footer p { max-width: var(--measure); margin: 0 0 8px; }
+
+@media (max-width: 900px) {
+  .hero { grid-template-columns: 1fr; gap: 36px; }
+  .install { border-left: 0; padding-left: 0; border-top: 2px solid var(--ink); padding-top: 26px; }
+}
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="bar">
+    <a class="brand" href="#">
+      <svg viewBox="0 0 10 10" aria-hidden="true"><rect x="4.5" y="1.5" width="5" height="7" fill="none" stroke="currentColor" stroke-width=".8"/><rect x="6" y="3" width="2" height="2" fill="var(--red)"/><path d="M1 3l1 2-1 2" stroke="currentColor" stroke-width=".8" fill="none"/></svg>
+      ESL Zap
+    </a>
+    <div class="lang" role="group" aria-label="Language">
+      <button type="button" data-lang="en" aria-pressed="true">EN</button>
+      <button type="button" data-lang="it" aria-pressed="false">IT</button>
+    </div>
+  </header>
+
+  <main>
+    <div class="hero">
+      <div>
+        <h1 data-i18n="h1">Installer &amp; photo editor</h1>
+        <p class="lede" data-i18n="lede">Two things in one page. Right: install ESL Zap on your Flipper in one click. Left: turn any photo into a label image and send it. Just connect the Flipper over USB and follow the steps.</p>
+
+        <div class="label">
+          <div class="label-glass" id="glass" tabindex="0" role="button" aria-label="Choose an image">
+            <canvas id="out" width="296" height="128"></canvas>
+            <div class="drop-hint" id="hint"><div><span data-i18n="drop">Drop a photo here</span><small data-i18n="drop2">or click to choose one</small></div></div>
+          </div>
+          <div class="label-foot"><span id="modelName">HD L Red, 296 x 128</span><span class="barcode" id="bcShow"></span></div>
+        </div>
+        <input type="file" id="file" accept="image/*" hidden>
+
+        <div class="controls">
+          <label class="ctl"><span data-i18n="model">Label model</span><select id="model"></select></label>
+          <label class="ctl"><span data-i18n="barcode">Or type its barcode</span><input type="text" id="barcode" maxlength="17" placeholder="A4012345678913289" autocomplete="off" spellcheck="false"></label>
+          <label class="ctl"><span data-i18n="fit">Fit</span><select id="fit">
+            <option value="contain" data-i18n="fitContain">Whole picture</option>
+            <option value="cover" data-i18n="fitCover">Fill the label</option>
+            <option value="stretch" data-i18n="fitStretch">Stretch</option></select></label>
+          <label class="ctl"><span data-i18n="dither">Dithering</span><select id="dither">
+            <option value="fs">Floyd-Steinberg</option>
+            <option value="atkinson">Atkinson</option>
+            <option value="ordered" data-i18n="ordered">Ordered (pattern)</option>
+            <option value="none" data-i18n="none">None (threshold)</option></select></label>
+          <label class="ctl"><span data-i18n="bright">Brightness</span><input type="range" id="bright" min="-100" max="100" value="0"></label>
+          <label class="ctl"><span data-i18n="contrast">Contrast</span><input type="range" id="contrast" min="-100" max="100" value="10"></label>
+          <label class="ctl"><span data-i18n="rotate">Rotate</span><select id="rotate">
+            <option value="0">0&deg;</option><option value="90">90&deg;</option><option value="180">180&deg;</option><option value="270">270&deg;</option></select></label>
+          <label class="ctl check"><input type="checkbox" id="color" checked><span data-i18n="useColor">Use the label's color</span></label>
+          <label class="ctl check"><input type="checkbox" id="invert"><span data-i18n="invert">Invert</span></label>
+        </div>
+        <div class="studio-actions">
+          <button class="btn" id="download" disabled data-i18n="download">Download BMP</button>
+          <button class="btn primary" id="sendImg" disabled data-i18n="sendImg">Copy to my Flipper</button>
+        </div>
+      </div>
+
+      <aside class="install" aria-labelledby="installTitle">
+        <h2 id="installTitle" data-i18n="installTitle">Install in one click</h2>
+        <p class="prose" data-i18n="installLede">Connect your Flipper with a USB cable and press the button. ESL Zap detects your firmware (Official, Momentum, Unleashed, RogueMaster) and installs the matching build.</p>
+        <button class="btn primary big" id="install" data-i18n="installBtn">Install ESL Zap</button>
+        <div class="nosupport" id="nosupport" data-i18n="nosupport">Your browser cannot talk to USB devices. Open this page in Chrome, Edge or Opera on a computer, or use the manual download below.</div>
+        <label class="opt"><input type="checkbox" id="launch" checked><span data-i18n="launch">Open ESL Zap when done</span></label>
+        <ol class="steps" id="steps">
+          <li id="st1"><div><b data-i18n="s1">Connect</b><p data-i18n="s1p">Pick your Flipper in the browser window. Close qFlipper first.</p></div></li>
+          <li id="st2"><div><b data-i18n="s2">Detect firmware</b><p id="st2p" data-i18n="s2p">ESL Zap reads the firmware name and API version.</p></div></li>
+          <li id="st3"><div><b data-i18n="s3">Copy the app</b><p data-i18n="s3p">Saved to Apps, Infrared, with an images folder ready to use.</p><div class="meter" id="meter"><i></i></div></div></li>
+        </ol>
+        <div class="device" id="device"></div>
+        <div class="status" id="status" role="status" aria-live="polite"></div>
+      </aside>
+    </div>
+
+    <section class="band" id="how">
+      <h2 data-i18n="howTitle">From photo to label</h2>
+      <div class="how">
+        <div><b data-i18n="h1t">Add your label</b><p data-i18n="h1p">In the app open My tags and type digits 3 to 16 of the label barcode (the first two and the last one are not needed), or import the label from NFC if it has a chip. ESL Zap recognises the model.</p></div>
+        <div><b data-i18n="h2t">Pick a picture</b><p data-i18n="h2p">Prepare it here and press Copy to my Flipper, or drop any .bmp into apps_data/esl_zap/images on the SD card.</p></div>
+        <div><b data-i18n="h3t">Aim and send</b><p data-i18n="h3p">Hold the Flipper 5 to 30 cm from the label with the IR window facing it and press Send.</p></div>
+        <div><b data-i18n="h4t">Wait a moment</b><p data-i18n="h4p">The label wakes up, receives the image and redraws its screen a few seconds later.</p></div>
+      </div>
+    </section>
+
+    <section class="band" id="manual">
+      <h2 data-i18n="manualTitle">Manual download</h2>
+      <p class="prose" data-i18n="manualLede">Each firmware needs its own build. Pick yours, copy the file with qFlipper to SD Card/apps/Infrared and start it from Apps on the Flipper.</p>
+      <div class="table-scroll"><table>
+        <thead><tr><th data-i18n="thFw">Firmware</th><th data-i18n="thApi">API</th><th data-i18n="thFile">File</th></tr></thead>
+        <tbody id="builds"><tr><td colspan="3" data-i18n="loading">Loading builds</td></tr></tbody>
+      </table></div>
+    </section>
+
+    <section class="band">
+      <h2 data-i18n="careTitle">Before you start</h2>
+      <div class="warn prose">
+        <p data-i18n="care1">Never remove the battery of a label: most models keep their address and firmware in volatile memory and stop working for good.</p>
+        <p data-i18n="care2">ESL Zap talks to infrared labels only. Labels updated by radio (most new store systems) cannot be changed.</p>
+        <p data-i18n="care3">Use ESL Zap only on labels you own. Changing displays in shops is not allowed.</p>
+      </div>
+    </section>
+  </main>
+
+  <footer>
+    <p><span data-i18n="foot1">ESL Zap by SangueFreddo, released under the MIT License. Protocol knowledge from furrtek's public ESL research; inspired by TagTinker.</span> <a href="https://github.com/SangueFreddo">github.com/SangueFreddo</a></p>
+    <p data-i18n="foot2">Flipper Zero is a trademark of Flipper Devices Inc. This project is not affiliated with Flipper Devices or with any label manufacturer.</p>
+  </footer>
+</div>
+
+<script id="ez-builds" type="application/json">{"builds":[]}</script>
+<script>
+"use strict";
+/* ---------------------------------------------------------------------------
+ * ESL Zap web tool. Copyright (c) 2026 SangueFreddo. MIT License.
+ * Image studio (dithering + BMP export) and one-click installer over WebSerial.
+ * ------------------------------------------------------------------------- */
+
+const I18N = {
+  it: {
+    h1: "Installer e Modifica foto",
+    lede: "Due cose in una pagina. A destra: installi ESL Zap sul Flipper con un clic. A sinistra: trasformi una foto in immagine per l'etichetta e la invii. Basta collegare il Flipper via USB e seguire i passi.",
+    drop: "Trascina qui una foto", drop2: "oppure clicca per sceglierla",
+    model: "Modello di etichetta", barcode: "Oppure scrivi il codice a barre", fit: "Adattamento",
+    fitContain: "Immagine intera", fitCover: "Riempi l'etichetta", fitStretch: "Estendi",
+    dither: "Dithering", ordered: "Ordinato (trama)", none: "Nessuno (soglia)",
+    bright: "Luminosita'", contrast: "Contrasto", rotate: "Ruota",
+    useColor: "Usa il colore dell'etichetta", invert: "Inverti",
+    download: "Scarica BMP", sendImg: "Copia sul mio Flipper",
+    installTitle: "Installa con un clic",
+    installLede: "Collega il Flipper con un cavo USB e premi il pulsante. ESL Zap riconosce il firmware (Ufficiale, Momentum, Unleashed, RogueMaster) e installa la versione giusta.",
+    installBtn: "Installa ESL Zap",
+    nosupport: "Il tuo browser non puo' comunicare con dispositivi USB. Apri questa pagina con Chrome, Edge o Opera su un computer, oppure usa il download manuale qui sotto.",
+    launch: "Apri ESL Zap alla fine",
+    s1: "Collega", s1p: "Scegli il Flipper nella finestra del browser. Chiudi prima qFlipper.",
+    s2: "Riconosci il firmware", s2p: "ESL Zap legge nome del firmware e versione API.",
+    s3: "Copia l'app", s3p: "Salvata in Apps, Infrared, con la cartella immagini gia' pronta.",
+    howTitle: "Dalla foto all'etichetta",
+    h1t: "Aggiungi l'etichetta", h1p: "Nell'app apri I miei tag e scrivi le cifre da 3 a 16 del codice a barre (le prime due e l'ultima non servono), oppure importa l'etichetta da NFC se ha il chip. ESL Zap riconosce il modello.",
+    h2t: "Scegli un'immagine", h2p: "Preparala qui e premi Copia sul mio Flipper, oppure metti un .bmp in apps_data/esl_zap/images sulla SD.",
+    h3t: "Punta e invia", h3p: "Tieni il Flipper a 5-30 cm dall'etichetta con la finestra IR rivolta verso di essa e premi Invia.",
+    h4t: "Aspetta un attimo", h4p: "L'etichetta si sveglia, riceve l'immagine e ridisegna lo schermo dopo qualche secondo.",
+    manualTitle: "Download manuale",
+    manualLede: "Ogni firmware ha bisogno della sua versione. Scegli la tua, copiala con qFlipper in SD Card/apps/Infrared e avviala da Apps sul Flipper.",
+    thFw: "Firmware", thApi: "API", thFile: "File", loading: "Carico le versioni",
+    careTitle: "Prima di iniziare",
+    care1: "Non togliere mai la batteria di un'etichetta: quasi tutti i modelli tengono indirizzo e firmware in una memoria volatile e smettono di funzionare per sempre.",
+    care2: "ESL Zap parla solo con etichette a infrarossi. Le etichette aggiornate via radio (gran parte dei sistemi recenti) non si possono modificare.",
+    care3: "Usa ESL Zap solo su etichette di tua proprieta'. Modificare i display nei negozi non e' consentito.",
+    foot1: "ESL Zap di SangueFreddo, rilasciato con licenza MIT. Conoscenza del protocollo dalla ricerca pubblica di furrtek sulle ESL; ispirato a TagTinker.",
+    foot2: "Flipper Zero e' un marchio di Flipper Devices Inc. Questo progetto non e' affiliato a Flipper Devices ne' ai produttori di etichette.",
+    // dynamic
+    stConnecting: "In attesa che tu scelga il Flipper...", stNoPort: "Nessun Flipper scelto.",
+    stDetect: "Leggo le informazioni del firmware...", stNoMatch: "Non c'e' ancora una versione per questo firmware (API {api}). Aggiorna il firmware o usa il download manuale.",
+    stDownloading: "Scarico la versione {name}...", stCopying: "Copio l'app sul Flipper ({pct}%)...",
+    stDone: "Fatto! Trovi ESL Zap in Apps, Infrared.", stDoneOpen: "Fatto! ESL Zap si sta aprendo sul Flipper.",
+    stBusy: "La porta USB e' occupata. Chiudi qFlipper o altre schede che usano il Flipper e riprova.",
+    stError: "Qualcosa e' andato storto: {msg}", stImgSent: "Immagine copiata in apps_data/esl_zap/images/{name}.",
+    stConnectFirst: "Prima collega il Flipper con Installa ESL Zap, poi copia l'immagine.",
+    devLine: "{fork} {version}, API {api}", build: "Versione scelta: {name}",
+    noBuilds: "Elenco delle versioni non disponibile: usa la pagina pubblicata su GitHub o la cartella fap.", custom: "Personalizzato", unknownModel: "Modello sconosciuto {code}",
+  },
+  en: {}
+};
+// English is the source text in the HTML; capture it once.
+document.querySelectorAll("[data-i18n]").forEach(el => { I18N.en[el.dataset.i18n] = el.textContent; });
+Object.assign(I18N.en, {
+  stConnecting: "Waiting for you to pick the Flipper...", stNoPort: "No Flipper was picked.",
+  stDetect: "Reading firmware information...", stNoMatch: "There is no build for this firmware yet (API {api}). Update the firmware or use the manual download.",
+  stDownloading: "Downloading the {name} build...", stCopying: "Copying the app to the Flipper ({pct}%)...",
+  stDone: "Done! Find ESL Zap in Apps, Infrared.", stDoneOpen: "Done! ESL Zap is opening on the Flipper.",
+  stBusy: "The USB port is busy. Close qFlipper or other tabs using the Flipper and try again.",
+  stError: "Something went wrong: {msg}", stImgSent: "Image copied to apps_data/esl_zap/images/{name}.",
+  stConnectFirst: "Connect the Flipper with Install ESL Zap first, then copy the image.",
+  devLine: "{fork} {version}, API {api}", build: "Chosen build: {name}",
+  noBuilds: "Build list unavailable: use the page published on GitHub or the fap folder.", custom: "Custom", unknownModel: "Unknown model {code}",
+});
+let lang = (navigator.language || "en").toLowerCase().startsWith("it") ? "it" : "en";
+try { lang = localStorage.getItem("ez-lang") || lang; } catch (e) {}
+const t = (k, vars) => {
+  let s = (I18N[lang] && I18N[lang][k]) || I18N.en[k] || k;
+  for (const [a, b] of Object.entries(vars || {})) s = s.replace("{" + a + "}", b);
+  return s;
+};
+function applyLang() {
+  document.documentElement.lang = lang;
+  document.querySelectorAll("[data-i18n]").forEach(el => { el.textContent = t(el.dataset.i18n); });
+  document.querySelectorAll(".lang button").forEach(b => b.setAttribute("aria-pressed", b.dataset.lang === lang));
+  updateModelLabel();
+}
+document.querySelectorAll(".lang button").forEach(b => b.addEventListener("click", () => {
+  lang = b.dataset.lang;
+  try { localStorage.setItem("ez-lang", lang); } catch (e) {}
+  applyLang();
+}));
+
+/* ---------------------------------------------------------------- models */
+const MODELS = [
+  [1315, 296, 128, 0, "HD L"], [1328, 296, 128, 1, "HD L Red"], [1344, 296, 128, 2, "HD L Yellow"],
+  [1370, 296, 128, 1, "HD L Red 2021"], [1627, 296, 128, 1, "HD L Red"], [1628, 296, 128, 1, "HD L Red"],
+  [1318, 208, 112, 0, "HD M"], [1324, 208, 112, 0, "HD M FZ"], [1327, 208, 112, 1, "HD M Red"],
+  [1317, 152, 152, 0, "HD S"], [1322, 152, 152, 0, "HD S"], [1339, 152, 152, 1, "HD S Red"], [1639, 152, 152, 1, "HD S Red"],
+  [1348, 264, 176, 1, "HD T Red"], [1349, 264, 176, 2, "HD T Yellow"],
+  [1314, 400, 300, 0, "HD110"], [1336, 400, 300, 1, "HD110 Red"],
+  [1351, 648, 480, 0, "HD150"], [1353, 648, 480, 1, "HD150 Red"], [1371, 648, 480, 1, "HD150 Red 2021"],
+  [1319, 800, 480, 0, "HD200"], [1340, 800, 480, 1, "HD200 Red"], [1346, 800, 480, 2, "HD200 Yellow"],
+  [1626, 296, 152, 1, "Color 2.6"], [1275, 320, 192, 0, "DM110"], [1276, 320, 140, 0, "DM90"], [1300, 172, 72, 0, "DM3370"],
+].map(([code, w, h, accent, name]) => ({ code, w, h, accent, name }));
+const ACCENT_RGB = [null, [200, 16, 46], [226, 177, 0]];
+
+const $ = id => document.getElementById(id);
+const modelSel = $("model");
+MODELS.forEach((m, i) => {
+  const o = document.createElement("option");
+  o.value = i;
+  o.textContent = `${m.code} ${m.name} (${m.w}x${m.h})`;
+  modelSel.appendChild(o);
+});
+modelSel.value = 1;
+let model = MODELS[1];
+function updateModelLabel() {
+  const colors = ["B/W", "B/W/R", "B/W/Y"][model.accent];
+  $("modelName").textContent = `${model.name}, ${model.w} x ${model.h}, ${colors}`;
+}
+modelSel.addEventListener("change", () => { model = MODELS[modelSel.value]; $("barcode").value = ""; $("bcShow").textContent = ""; resize(); });
+$("barcode").addEventListener("input", e => {
+  const v = e.target.value.trim().toUpperCase();
+  e.target.value = v;
+  $("bcShow").textContent = v;
+  if (/^[A-Z]\d{16}$/.test(v)) {
+    const code = parseInt(v.slice(12, 16), 10);
+    const i = MODELS.findIndex(m => m.code === code);
+    if (i >= 0) { modelSel.value = i; model = MODELS[i]; resize(); }
+    else $("modelName").textContent = t("unknownModel", { code });
+  }
+});
+
+/* ---------------------------------------------------------------- studio */
+const out = $("out");
+const octx = out.getContext("2d", { willReadFrequently: true });
+let srcImage = null;
+let srcName = "image";
+let result = null; // Uint8Array of 0 black, 1 white, 2 accent
+
+function resize() {
+  out.width = model.w; out.height = model.h;
+  $("glass").style.aspectRatio = `${model.w} / ${model.h}`;
+  updateModelLabel();
+  render();
+}
+
+function loadFile(file) {
+  if (!file || !file.type.startsWith("image/")) return;
+  srcName = file.name.replace(/\.[^.]+$/, "").replace(/[^A-Za-z0-9_-]+/g, "_").slice(0, 24) || "image";
+  const img = new Image();
+  img.onload = () => { srcImage = img; $("hint").style.display = "none"; render(); };
+  img.src = URL.createObjectURL(file);
+}
+const glass = $("glass");
+glass.addEventListener("click", () => $("file").click());
+glass.addEventListener("keydown", e => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); $("file").click(); } });
+$("file").addEventListener("change", e => loadFile(e.target.files[0]));
+["dragenter", "dragover"].forEach(ev => glass.addEventListener(ev, e => { e.preventDefault(); glass.classList.add("drag"); }));
+["dragleave", "drop"].forEach(ev => glass.addEventListener(ev, e => { e.preventDefault(); glass.classList.remove("drag"); }));
+glass.addEventListener("drop", e => loadFile(e.dataTransfer.files[0]));
+document.addEventListener("paste", e => {
+  const item = [...(e.clipboardData || {}).items || []].find(i => i.type.startsWith("image/"));
+  if (item) loadFile(item.getAsFile());
+});
+["fit", "dither", "bright", "contrast", "rotate", "color", "invert"].forEach(id => $(id).addEventListener("input", render));
+
+function isAccent(r, g, b, accent) {
+  if (accent === 1) return r >= 110 && r - g >= 60 && r - b >= 60;
+  if (accent === 2) { const warm = (r + g) / 2; return r >= 140 && g >= 120 && warm - b >= 70 && Math.abs(r - g) <= 90; }
+  return false;
+}
+
+function render() {
+  const W = model.w, H = model.h;
+  if (!srcImage) { drawEmpty(); return; }
+  // draw source into a work canvas with rotation and fit
+  const rot = +$("rotate").value;
+  const sw = rot % 180 ? srcImage.height : srcImage.width;
+  const sh = rot % 180 ? srcImage.width : srcImage.height;
+  const work = document.createElement("canvas");
+  work.width = W; work.height = H;
+  const w = work.getContext("2d", { willReadFrequently: true });
+  w.fillStyle = "#fff"; w.fillRect(0, 0, W, H);
+  w.imageSmoothingQuality = "high";
+  let dw = W, dh = H;
+  const fit = $("fit").value;
+  if (fit !== "stretch") {
+    const s = fit === "contain" ? Math.min(W / sw, H / sh) : Math.max(W / sw, H / sh);
+    dw = sw * s; dh = sh * s;
+  }
+  w.save();
+  w.translate(W / 2, H / 2);
+  w.rotate(rot * Math.PI / 180);
+  const rw = rot % 180 ? dh : dw, rh = rot % 180 ? dw : dh;
+  w.drawImage(srcImage, -rw / 2, -rh / 2, rw, rh);
+  w.restore();
+
+  const px = w.getImageData(0, 0, W, H).data;
+  const accent = $("color").checked ? model.accent : 0;
+  const bright = +$("bright").value * 1.28;
+  const c = +$("contrast").value / 100;
+  const k = (1 + c) / (1 - Math.min(c, 0.99));
+  const invert = $("invert").checked;
+  const lum = new Float32Array(W * H);
+  result = new Uint8Array(W * H);
+  for (let i = 0; i < W * H; i++) {
+    const r = px[i * 4], g = px[i * 4 + 1], b = px[i * 4 + 2];
+    if (accent && isAccent(r, g, b, accent)) { result[i] = 2; lum[i] = -1; continue; }
+    let l = 0.299 * r + 0.587 * g + 0.114 * b;
+    l = (l - 128) * k + 128 + bright;
+    if (invert) l = 255 - l;
+    lum[i] = Math.max(0, Math.min(255, l));
+  }
+  dither(lum, W, H, $("dither").value);
+  draw();
+  $("download").disabled = false;
+  $("sendImg").disabled = false;
+}
+
+function dither(lum, W, H, mode) {
+  const bayer = [0, 8, 2, 10, 12, 4, 14, 6, 3, 11, 1, 9, 15, 7, 13, 5];
+  for (let y = 0; y < H; y++) {
+    for (let x = 0; x < W; x++) {
+      const i = y * W + x;
+      if (lum[i] < 0) continue; // accent pixel
+      let v = lum[i], white;
+      if (mode === "ordered") white = v > (bayer[(y & 3) * 4 + (x & 3)] + 0.5) * 16;
+      else white = v >= 128;
+      result[i] = white ? 1 : 0;
+      if (mode !== "fs" && mode !== "atkinson") continue;
+      const err = v - (white ? 255 : 0);
+      const spread = (dx, dy, f) => {
+        const xx = x + dx, yy = y + dy;
+        if (xx < 0 || xx >= W || yy >= H) return;
+        const j = yy * W + xx;
+        if (lum[j] >= 0) lum[j] += err * f;
+      };
+      if (mode === "fs") { spread(1, 0, 7 / 16); spread(-1, 1, 3 / 16); spread(0, 1, 5 / 16); spread(1, 1, 1 / 16); }
+      else { const f = 1 / 8; spread(1, 0, f); spread(2, 0, f); spread(-1, 1, f); spread(0, 1, f); spread(1, 1, f); spread(0, 2, f); }
+    }
+  }
+}
+
+function draw() {
+  const W = model.w, H = model.h;
+  const img = octx.createImageData(W, H);
+  const acc = ACCENT_RGB[model.accent] || [0, 0, 0];
+  for (let i = 0; i < W * H; i++) {
+    const v = result[i];
+    const rgb = v === 1 ? [242, 242, 238] : v === 2 ? acc : [12, 12, 12];
+    img.data.set([...rgb, 255], i * 4);
+  }
+  octx.putImageData(img, 0, 0);
+}
+
+function drawEmpty() {
+  const W = model.w, H = model.h;
+  octx.fillStyle = "#f2f2ee"; octx.fillRect(0, 0, W, H);
+  // faint checker so the empty label still reads as a pixel screen
+  octx.fillStyle = "#e3e3dd";
+  for (let y = 0; y < H; y += 8) for (let x = (y / 8) % 2 ? 8 : 0; x < W; x += 16) octx.fillRect(x, y, 8, 8);
+  result = null;
+  $("download").disabled = true;
+  $("sendImg").disabled = true;
+}
+
+/* 4-bit palette BMP: index 0 white, 1 black, 2 accent. Small and decoded by ESL Zap. */
+function makeBmp() {
+  const W = model.w, H = model.h;
+  const stride = Math.ceil(W / 2 / 4) * 4;
+  const palette = 16 * 4, header = 14 + 40;
+  const size = header + palette + stride * H;
+  const buf = new ArrayBuffer(size), v = new DataView(buf), u = new Uint8Array(buf);
+  u[0] = 66; u[1] = 77; v.setUint32(2, size, true); v.setUint32(10, header + palette, true);
+  v.setUint32(14, 40, true); v.setInt32(18, W, true); v.setInt32(22, H, true);
+  v.setUint16(26, 1, true); v.setUint16(28, 4, true); v.setUint32(30, 0, true);
+  v.setUint32(34, stride * H, true); v.setUint32(46, 3, true);
+  const acc = ACCENT_RGB[model.accent] || [0, 0, 0];
+  const pal = [[255, 255, 255], [0, 0, 0], acc];
+  pal.forEach((c, i) => { u[54 + i * 4] = c[2]; u[55 + i * 4] = c[1]; u[56 + i * 4] = c[0]; });
+  const map = [1, 0, 2]; // result value -> palette index
+  for (let y = 0; y < H; y++) {
+    const row = header + palette + (H - 1 - y) * stride;
+    for (let x = 0; x < W; x++) {
+      const idx = map[result[y * W + x]];
+      const o = row + (x >> 1);
+      u[o] |= x & 1 ? idx : idx << 4;
+    }
+  }
+  return u;
+}
+$("download").addEventListener("click", () => {
+  if (!result) return;
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(new Blob([makeBmp()], { type: "image/bmp" }));
+  a.download = `${srcName}_${model.w}x${model.h}.bmp`;
+  a.click();
+});
+
+/* ---------------------------------------------------------------- flipper CLI over WebSerial */
+class FlipperCli {
+  constructor(port) { this.port = port; this.text = ""; this.reader = null; }
+  async open() {
+    await this.port.open({ baudRate: 230400 });
+    this.writer = this.port.writable.getWriter();
+    this.decoder = new TextDecoder();
+    this.readLoop();
+    await this.writeText("\r");
+    await this.waitFor(">: ", 4000).catch(() => {});
+  }
+  async readLoop() {
+    this.reader = this.port.readable.getReader();
+    try {
+      for (;;) {
+        const { value, done } = await this.reader.read();
+        if (done) break;
+        this.text += this.decoder.decode(value, { stream: true });
+      }
+    } catch (e) { /* port closed */ }
+  }
+  writeText(s) { return this.writer.write(new TextEncoder().encode(s)); }
+  async waitFor(token, timeout = 8000) {
+    const start = Date.now();
+    for (;;) {
+      const i = this.text.indexOf(token);
+      if (i >= 0) { const before = this.text.slice(0, i); this.text = this.text.slice(i + token.length); return before; }
+      if (Date.now() - start > timeout) throw new Error("timeout waiting for Flipper");
+      await new Promise(r => setTimeout(r, 15));
+    }
+  }
+  async cmd(line, timeout) {
+    this.text = "";
+    await this.writeText(line + "\r");
+    return this.waitFor(">: ", timeout);
+  }
+  async info() {
+    const outText = await this.cmd("device_info");
+    const info = {};
+    outText.split(/\r?\n/).forEach(l => { const m = l.match(/^\s*([a-z0-9_]+)\s*:\s*(.*?)\s*$/i); if (m) info[m[1]] = m[2]; });
+    return info;
+  }
+  async writeFile(path, bytes, onProgress) {
+    await this.cmd(`storage remove ${path}`);
+    const CHUNK = 512;
+    for (let off = 0; off < bytes.length; off += CHUNK) {
+      const part = bytes.subarray(off, Math.min(off + CHUNK, bytes.length));
+      this.text = "";
+      await this.writeText(`storage write_chunk ${path} ${part.length}\r`);
+      const pre = await this.waitFor("Ready", 5000);
+      if (/error/i.test(pre)) throw new Error(pre.trim().split("\n").pop());
+      await this.writer.write(part);
+      const after = await this.waitFor(">: ", 8000);
+      if (/Storage error|error/i.test(after)) throw new Error(after.trim());
+      onProgress && onProgress(Math.min(1, (off + part.length) / bytes.length));
+    }
+  }
+  async close() {
+    try { this.reader && await this.reader.cancel(); } catch (e) {}
+    try { this.writer && this.writer.releaseLock(); } catch (e) {}
+    try { await this.port.close(); } catch (e) {}
+  }
+}
+
+let cli = null;
+const statusEl = $("status");
+function status(msg, kind) { statusEl.textContent = msg; statusEl.className = "status" + (kind ? " " + kind : ""); }
+function step(n, state) { const li = $("st" + n); li.classList.remove("active", "done"); if (state) li.classList.add(state); }
+function meter(p) { const m = $("meter"); m.style.display = p == null ? "none" : "block"; m.firstElementChild.style.width = Math.round((p || 0) * 100) + "%"; }
+
+let builds = [];
+/* Builds are embedded in the page (works from a file on the PC and offline).
+ * When the page has no embedded builds it falls back to faps/index.json. */
+function b64ToBytes(b64) {
+  const bin = atob(b64), out = new Uint8Array(bin.length);
+  for (let i = 0; i < bin.length; i++) out[i] = bin.charCodeAt(i);
+  return out;
+}
+async function buildBytes(b) {
+  if (b.data) return b64ToBytes(b.data);
+  const r = await fetch(b.file);
+  if (!r.ok) throw new Error("cannot download " + b.file);
+  return new Uint8Array(await r.arrayBuffer());
+}
+async function loadBuilds() {
+  const tbody = $("builds");
+  builds = [];
+  try { builds = JSON.parse($("ez-builds").textContent).builds || []; } catch (e) {}
+  if (!builds.length) {
+    try {
+      const r = await fetch("faps/index.json", { cache: "no-store" });
+      builds = (await r.json()).builds || [];
+    } catch (e) { builds = []; }
+  }
+  tbody.textContent = "";
+  if (!builds.length) {
+    const tr = document.createElement("tr");
+    const td = document.createElement("td");
+    td.colSpan = 3; td.textContent = t("noBuilds");
+    tr.appendChild(td); tbody.appendChild(tr);
+    return;
+  }
+  builds.forEach(b => {
+    const tr = document.createElement("tr");
+    const a = document.createElement("a");
+    const name = "esl_zap-" + b.id + ".fap";
+    a.textContent = name;
+    a.href = b.data ? URL.createObjectURL(new Blob([b64ToBytes(b.data)], { type: "application/octet-stream" })) : b.file;
+    a.download = "esl_zap.fap";
+    tr.innerHTML = `<td></td><td></td><td></td>`;
+    tr.children[0].textContent = b.label; tr.children[1].textContent = b.api; tr.children[2].appendChild(a);
+    tbody.appendChild(tr);
+  });
+}
+
+/* A .fap built for API X.Y runs on firmware X.Z when Z >= Y. Prefer the same fork. */
+function chooseBuild(info) {
+  const major = parseInt(info.firmware_api_major, 10), minor = parseInt(info.firmware_api_minor, 10);
+  const fork = (info.firmware_origin_fork || "").toLowerCase();
+  // dev firmwares report "dev" in their branch or version (e.g. mntm-dev)
+  const devFw = /dev/i.test((info.firmware_branch || "") + " " + (info.firmware_version || ""));
+  const channel = devFw ? "dev" : "release";
+  const ok = builds.filter(b => { const [M, m] = b.api.split(".").map(Number); return M === major && m <= minor; });
+  const score = b => (b.fork.toLowerCase() === fork ? 4 : 0) + ((b.channel || "release") === channel ? 2 : 0);
+  ok.sort((a, b) => {
+    if (score(a) !== score(b)) return score(b) - score(a);
+    return Number(b.api.split(".")[1]) - Number(a.api.split(".")[1]);
+  });
+  return ok[0] || null;
+}
+
+async function connect() {
+  if (cli) return cli;
+  status(t("stConnecting"));
+  step(1, "active");
+  let port;
+  try { port = await navigator.serial.requestPort({ filters: [{ usbVendorId: 0x0483, usbProductId: 0x5740 }] }); }
+  catch (e) { step(1); status(t("stNoPort"), "err"); return null; }
+  const c = new FlipperCli(port);
+  try { await c.open(); }
+  catch (e) { step(1); status(t("stBusy"), "err"); return null; }
+  cli = c;
+  port.addEventListener("disconnect", () => { cli = null; });
+  step(1, "done");
+  return cli;
+}
+
+$("install").addEventListener("click", async () => {
+  const btn = $("install");
+  btn.disabled = true;
+  try {
+    const c = await connect();
+    if (!c) return;
+    step(2, "active");
+    status(t("stDetect"));
+    const info = await c.info();
+    const api = `${info.firmware_api_major}.${info.firmware_api_minor}`;
+    const dev = $("device");
+    dev.style.display = "block";
+    dev.textContent = t("devLine", { fork: info.firmware_origin_fork || "?", version: info.firmware_version || "", api });
+    if (!builds.length) await loadBuilds();
+    if (!builds.length) { step(2); status(t("noBuilds"), "err"); return; }
+    const build = chooseBuild(info);
+    if (!build) { step(2); status(t("stNoMatch", { api }), "err"); return; }
+    dev.append(document.createElement("br"), t("build", { name: build.label }));
+    step(2, "done");
+
+    step(3, "active");
+    status(t("stDownloading", { name: build.label }));
+    const bytes = await buildBytes(build);
+    await c.cmd("storage mkdir /ext/apps");
+    await c.cmd("storage mkdir /ext/apps/Infrared");
+    await c.cmd("storage mkdir /ext/apps_data");
+    await c.cmd("storage mkdir /ext/apps_data/esl_zap");
+    await c.cmd("storage mkdir /ext/apps_data/esl_zap/images");
+    meter(0);
+    await c.writeFile("/ext/apps/Infrared/esl_zap.fap", bytes, p => { meter(p); status(t("stCopying", { pct: Math.round(p * 100) })); });
+    meter(null);
+    step(3, "done");
+    if ($("launch").checked) {
+      await c.cmd("loader open /ext/apps/Infrared/esl_zap.fap", 4000).catch(() => {});
+      status(t("stDoneOpen"), "ok");
+    } else status(t("stDone"), "ok");
+  } catch (e) {
+    meter(null);
+    status(t("stError", { msg: e.message }), "err");
+  } finally { btn.disabled = false; }
+});
+
+$("sendImg").addEventListener("click", async () => {
+  if (!result) return;
+  if (!("serial" in navigator)) { status(t("stConnectFirst"), "err"); return; }
+  const btn = $("sendImg");
+  btn.disabled = true;
+  try {
+    const c = await connect();
+    if (!c) return;
+    await c.cmd("storage mkdir /ext/apps_data");
+    await c.cmd("storage mkdir /ext/apps_data/esl_zap");
+    await c.cmd("storage mkdir /ext/apps_data/esl_zap/images");
+    const name = `${srcName}_${model.w}x${model.h}.bmp`;
+    meter(0);
+    await c.writeFile(`/ext/apps_data/esl_zap/images/${name}`, makeBmp(), p => meter(p));
+    meter(null);
+    status(t("stImgSent", { name }), "ok");
+  } catch (e) {
+    meter(null);
+    status(t("stError", { msg: e.message }), "err");
+  } finally { btn.disabled = false; }
+});
+
+if (!("serial" in navigator)) {
+  $("install").disabled = true;
+  $("nosupport").style.display = "block";
+}
+applyLang();
+resize();
+loadBuilds();
+</script>
+</body>
+</html>
