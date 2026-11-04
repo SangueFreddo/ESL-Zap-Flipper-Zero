@@ -1,0 +1,96 @@
+# ESL Zap - builds one .fap per firmware family, publishes the web installer
+# (GitHub Pages) and attaches the builds to a GitHub release on version tags.
+name: Build and publish
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+  schedule:
+    # weekly rebuild so new firmware versions get a matching build
+    - cron: "17 4 * * 1"
+
+permissions:
+  contents: write
+  pages: write
+  id-token: write
+
+jobs:
+  build:
+    name: ${{ matrix.label }}
+    runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.optional }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { id: official-release, label: "Official (release)", fork: Official, channel: release, index: "", optional: false }
+          - { id: official-rc, label: "Official (release candidate)", fork: Official, channel: rc, index: "", optional: true }
+          - { id: official-dev, label: "Official (dev)", fork: Official, channel: dev, index: "", optional: true }
+          - { id: momentum-release, label: "Momentum (release)", fork: Momentum, channel: release, index: "https://up.momentum-fw.dev/firmware/directory.json", optional: false }
+          - { id: momentum-dev, label: "Momentum (dev)", fork: Momentum, channel: dev, index: "https://up.momentum-fw.dev/firmware/directory.json", optional: false }
+          - { id: unleashed-release, label: "Unleashed (release)", fork: Unleashed, channel: release, index: "https://up.unleashedflip.com/directory.json", optional: false }
+          - { id: unleashed-dev, label: "Unleashed (dev)", fork: Unleashed, channel: dev, index: "https://up.unleashedflip.com/directory.json", optional: true }
+          - { id: roguemaster-release, label: "RogueMaster", fork: RogueMaster, channel: release, index: "https://up.roguemaster.net/firmware/directory.json", optional: true }
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build for ${{ matrix.label }}
+        id: build
+        uses: flipperdevices/flipperzero-ufbt-action@v0.1.4
+        with:
+          sdk-channel: ${{ matrix.channel }}
+          sdk-index-url: ${{ matrix.index }}
+
+      - name: Check that every symbol exists in the firmware
+        run: |
+          python3 -m pip install --quiet pyelftools
+          API_CSV=$(find ~/.ufbt -name api_symbols.csv | head -n 1)
+          python3 tools/check_fap.py "${{ steps.build.outputs.fap-dir }}/esl_zap.fap" "$API_CSV"
+
+      - name: Collect build
+        run: |
+          mkdir -p out
+          cp "${{ steps.build.outputs.fap-dir }}/esl_zap.fap" "out/esl_zap-${{ matrix.id }}.fap"
+          python3 tools/build_meta.py out "${{ matrix.id }}" "${{ matrix.label }}" "${{ matrix.fork }}" "${{ steps.build.outputs.api-version }}" "${{ matrix.channel }}"
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: fap-${{ matrix.id }}
+          path: out/
+
+  publish:
+    name: Web installer and release
+    needs: build
+    if: always() && github.event_name != 'pull_request'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deploy.outputs.page_url }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/download-artifact@v4
+        with:
+          pattern: fap-*
+          path: builds
+          merge-multiple: true
+
+      - name: Assemble site
+        run: python3 tools/make_site.py builds web site
+
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - id: deploy
+        uses: actions/deploy-pages@v4
+
+      - name: Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: builds/*.fap
+          generate_release_notes: true

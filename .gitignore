@@ -1,0 +1,10 @@
+dist/
+web/faps/
+site/
+build/
+.vscode/
+*.o
+
+# standalone generated page
+"ESL Zap - Installer e Modifica foto.html"
+/*.html

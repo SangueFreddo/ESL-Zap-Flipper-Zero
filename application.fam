@@ -1,0 +1,18 @@
+# ESL Zap - infrared e-paper label toolkit for Flipper Zero
+# Copyright (c) 2026 SangueFreddo. Licensed under the MIT License.
+App(
+    appid="esl_zap",
+    name="ESL Zap",
+    apptype=FlipperAppType.EXTERNAL,
+    entry_point="esl_zap_app",
+    requires=["gui", "storage", "dialogs", "notification"],
+    stack_size=8 * 1024,
+    fap_category="Infrared",
+    fap_icon="esl_zap.png",
+    fap_icon_assets="images",
+    fap_version="1.0",
+    fap_author="SangueFreddo",
+    fap_description="Send pictures and text to infrared e-paper shelf labels you own. Images folder: apps_data/esl_zap/images",
+    fap_weburl="https://github.com/SangueFreddo/ESL-Zap",
+    sources=["src/*.c*", "src/*/*.c*"],
+)
