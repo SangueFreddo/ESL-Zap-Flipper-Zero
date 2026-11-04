@@ -61,19 +61,20 @@ No PC needed to use it, no account, no cloud: everything runs on the Flipper and
 
 <table>
   <tr>
-    <td align="center"><img src="docs/01-home.png" width="260" alt="Home"><br><sub>Home — big icons, Up/Down switch tag</sub></td>
-    <td align="center"><img src="docs/02-barcode.png" width="260" alt="Barcode entry"><br><sub>Add tag — type digits 3–16, model shown live</sub></td>
+    <td align="center"><img src="docs/01-home.png" width="300" alt="Home"><br><sub>Home — big icons, Up/Down switch tag</sub></td>
+    <td align="center"><img src="docs/02-tags.png" width="300" alt="My tags"><br><sub>My tags — add by barcode or from NFC</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/03-preview.png" width="260" alt="Preview"><br><sub>Preview — what the label will display</sub></td>
-    <td align="center"><img src="docs/04-sending.png" width="260" alt="Sending"><br><sub>Sending over infrared</sub></td>
+    <td align="center"><img src="docs/03-barcode.png" width="300" alt="Barcode entry"><br><sub>Add tag — type digits 3–16, model shown live</sub></td>
+    <td align="center"><img src="docs/04-preview.png" width="300" alt="Preview"><br><sub>Preview — what the label will display</sub></td>
   </tr>
   <tr>
-    <td align="center" colspan="2"><img src="docs/05-nfc.png" width="260" alt="NFC import"><br><sub>Import from NFC — live read of the tag's chip</sub></td>
+    <td align="center"><img src="docs/05-sending.png" width="300" alt="Sending"><br><sub>Sending over infrared</sub></td>
+    <td align="center"><img src="docs/06-nfc.png" width="300" alt="NFC import"><br><sub>Import from NFC — live chip read</sub></td>
   </tr>
 </table>
 
-<sub>Screens rendered from the app's real layout and font. Photos of a real Flipper are welcome — open an issue or PR.</sub>
+<sub>Illustrations: the app's real screens drawn inside a stylised Flipper Zero.</sub>
 
 # 🚀 Install
 
@@ -128,19 +129,37 @@ Flipper Zero is a trademark of Flipper Devices Inc.; this project is not affilia
 
 # 🇮🇹 Italiano
 
-**ESL Zap** trasforma il tuo **Flipper Zero** in un telecomando per le **etichette elettroniche a infrarossi (ESL)** di tua proprietà — i cartellini e-paper dei prezzi. Punti il Flipper verso l'etichetta e le mandi un'**immagine**, del **testo** o l'**immagine di prova**. Tutto gira sul Flipper e in un'unica pagina web offline per installare e preparare le foto.
+**ESL Zap** trasforma il tuo **Flipper Zero** in un telecomando per le **etichette elettroniche a infrarossi (ESL)** di tua proprietà — i cartellini e-paper dei prezzi dei negozi. Punti il Flipper verso l'etichetta e le mandi un'**immagine**, del **testo** o l'**immagine di prova**. L'etichetta viene pilotata via infrarosso, esattamente come fa la base station del negozio, usando la ricerca pubblica sul protocollo di **furrtek**. Niente PC, niente account, niente cloud: tutto gira sul Flipper e in un'unica pagina web offline per installare e preparare le foto.
 
 ### ⚡ [Apri l'installer e l'editor foto](https://sanguefreddo.github.io/ESL-Zap-Flipper-Zero/)
 Collega il Flipper via USB e premi Installa, oppure trascina una foto e inviala (Chrome, Edge o Opera).
 
-**Come si usa**
+### ✨ Caratteristiche
+| | |
+| --- | --- |
+| 📡 **Invia immagini e testo** | Qualsiasi BMP (1/4/8/24/32 bit, ogni dimensione) viene scalato, dithering applicato e inviato. C'è anche la modalità testo e l'immagine di prova. |
+| 🎨 **Riconosce rosso/giallo** | Rileva il colore d'accento dei tag tricolori e invia da solo il piano colore. |
+| 🏷️ **Aggiunta facile** | Scrivi solo le cifre **3–16** del codice a barre (il resto non serve), oppure **importa da NFC** per i tag col chip: il Flipper lo legge in diretta. |
+| 🔌 **Tutti i firmware** | Una build per **Official, Momentum, Unleashed, RogueMaster**, ricompilata ogni settimana dalla CI. |
+| 🖱️ **Installazione 1 clic** | La pagina web riconosce il firmware via USB e installa la build giusta; converte anche le tue foto. |
+| 👀 **Anteprima** | Vedi sullo schermo del Flipper cosa mostrerà l'etichetta prima di inviare. |
+
+### 🎮 Come si usa
 1. *I miei tag → + Aggiungi tag*: scrivi le cifre da **3 a 16** del codice a barre (le prime due e l'ultima appaiono come `-` e non servono). Il modello compare mentre scrivi. Per i tag col chip NFC: *+ Importa da NFC*, il Flipper lo legge in diretta.
-2. Scegli *Invia immagine*, *Scrivi testo* (`_` = spazio, `|` = a capo) o *Immagine prova*.
-3. Controlla l'anteprima e le opzioni.
-4. Tieni il Flipper a 5–30 cm dall'etichetta e premi *Invia*.
+2. Scegli *Invia immagine* (un BMP da `apps_data/esl_zap/images`), *Scrivi testo* (`_` = spazio, `|` = a capo) o *Immagine prova*.
+3. Controlla l'anteprima e le opzioni (adatta, dithering, inverti, colore, pagina).
+4. Tieni il Flipper a 5–30 cm dall'etichetta, finestra IR verso il tag, e premi *Invia*. L'etichetta si aggiorna dopo qualche secondo.
 
-> ⚠️ Usalo **solo sulle tue etichette**. Funziona con i tag a **infrarossi** (famiglia Pricer); i tag **radio** SES-imagotag/VUSION a 2,4 GHz non sono supportati (l'hardware del Flipper non arriva a quella banda).
+*Su/Giu nella home cambiano il tag attivo. Se un'etichetta non reagisce: Impostazioni → Risveglio 15 s, Ripetizioni 3×.*
 
-**Non togliere mai la batteria del tag:** quasi sempre perde la memoria per sempre.
+### 🏷️ Etichette supportate
+Tag grafici a infrarossi il cui codice modello (cifre 13–16 del codice a barre) è noto, da 152×152 fino a 800×480, mono / rosso / giallo. I modelli sconosciuti si aggiungono impostando la dimensione a mano. I tag a segmenti supportano il cambio pagina.
 
-Licenza MIT · di [SangueFreddo](https://github.com/SangueFreddo) · protocollo dalla ricerca pubblica di furrtek, ispirato a TagTinker.
+> ⚠️ Usalo **solo sulle tue etichette**. Funziona con i tag a **infrarossi** (famiglia Pricer); i tag **radio** SES-imagotag/VUSION a 2,4 GHz non sono supportati, perché l'hardware del Flipper non arriva a quella banda.
+
+**Non togliere mai la batteria del tag:** quasi tutti i modelli tengono indirizzo e immagine in una memoria volatile e smettono di funzionare per sempre.
+
+### 🙌 Crediti e licenza
+Protocollo ESL a infrarossi decifrato e pubblicato da **[furrtek](https://www.furrtek.org/?a=esl)** ([PrecIR](https://github.com/furrtek/PrecIR)); i frame di ESL Zap sono verificati byte per byte con il suo. Formato dell'id NFC documentato dalla community **TagTinker** (contributo di 7h30th3r0n3). Ispirato a **[TagTinker](https://github.com/i12bp8/TagTinker)**; ESL Zap è un'implementazione indipendente scritta da zero.
+
+Licenza **MIT** · © 2026 **[SangueFreddo](https://github.com/SangueFreddo)**. Flipper Zero è un marchio di Flipper Devices Inc.; questo progetto non è affiliato a Flipper Devices né ai produttori di etichette.
