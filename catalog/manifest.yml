@@ -6,7 +6,7 @@ sourcecode:
   type: git
   location:
     origin: https://github.com/SangueFreddo/ESL-Zap-Flipper-Zero.git
-    commit_sha: REPLACE_WITH_COMMIT_SHA   # full SHA of the pushed commit
+    commit_sha: 8467a2206d6b6296d07c419daf613c94550f5077 # full SHA of the pushed commit
 description: "@docs/catalog-description.md"
 changelog: "@docs/changelog.md"
 screenshots:
