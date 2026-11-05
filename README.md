@@ -61,20 +61,19 @@ No PC needed to use it, no account, no cloud: everything runs on the Flipper and
 
 <table>
   <tr>
-    <td align="center"><img src="docs/01-home.png" width="300" alt="Home"><br><sub>Home — big icons, Up/Down switch tag</sub></td>
-    <td align="center"><img src="docs/02-tags.png" width="300" alt="My tags"><br><sub>My tags — add by barcode or from NFC</sub></td>
+    <td align="center"><img src="docs/01-home.png" width="300" alt="Home"><br><sub>Home — send image, text or a test card</sub></td>
+    <td align="center"><img src="docs/02-tags.png" width="300" alt="My tags"><br><sub>My tags — Left/Right switch the active tag</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/03-barcode.png" width="300" alt="Barcode entry"><br><sub>Add tag — type digits 3–16, model shown live</sub></td>
-    <td align="center"><img src="docs/04-preview.png" width="300" alt="Preview"><br><sub>Preview — what the label will display</sub></td>
+    <td align="center"><img src="docs/03-add.png" width="300" alt="Add a tag"><br><sub>Add a tag — by barcode or import from NFC</sub></td>
+    <td align="center"><img src="docs/04-barcode.png" width="300" alt="Barcode entry"><br><sub>Type digits 3–16, model shown live</sub></td>
   </tr>
   <tr>
-    <td align="center"><img src="docs/05-sending.png" width="300" alt="Sending"><br><sub>Sending over infrared</sub></td>
-    <td align="center"><img src="docs/06-nfc.png" width="300" alt="NFC import"><br><sub>Import from NFC — live chip read</sub></td>
+    <td align="center" colspan="2"><img src="docs/05-settings.png" width="300" alt="Settings"><br><sub>Settings — language, IR mode, wake-up, repeats</sub></td>
   </tr>
 </table>
 
-<sub>Real app screens on a Flipper Zero, cartoon style.</sub>
+<sub>Real Flipper Zero screenshots, captured with qFlipper.</sub>
 
 # 🚀 Install
 
