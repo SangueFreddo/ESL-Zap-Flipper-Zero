@@ -1,0 +1,17 @@
+# Flipper Apps Catalog manifest for ESL Zap.
+# Place this file in the catalog repo at:
+#   applications/Infrared/esl_zap/manifest.yml
+# Name, id, category, version, author and icon are read from application.fam.
+sourcecode:
+  type: git
+  location:
+    origin: https://github.com/SangueFreddo/ESL-Zap-Flipper-Zero.git
+    commit_sha: REPLACE_WITH_COMMIT_SHA   # full SHA of the pushed commit
+description: "@docs/catalog-description.md"
+changelog: "@docs/changelog.md"
+screenshots:
+  - screenshots/01-home.png
+  - screenshots/02-tags.png
+  - screenshots/03-add.png
+  - screenshots/04-barcode.png
+  - screenshots/05-settings.png

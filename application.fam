@@ -13,6 +13,6 @@ App(
     fap_version="1.0",
     fap_author="SangueFreddo",
     fap_description="Send pictures and text to infrared e-paper shelf labels you own. Images folder: apps_data/esl_zap/images",
-    fap_weburl="https://github.com/SangueFreddo/ESL-Zap",
+    fap_weburl="https://github.com/SangueFreddo/ESL-Zap-Flipper-Zero",
     sources=["src/*.c*", "src/*/*.c*"],
 )
